@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Container,
     Typography,
@@ -8,37 +8,40 @@ import {
     MenuItem,
     Stack
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, Help as HelpIcon } from '@mui/icons-material';
 import { TodoItem } from './TodoItem';
 import { TodoForm } from './TodoForm';
 import { ChatBox } from './ChatBox';
+import { HowToUse } from './HowToUse';
 import { api } from '../services/api';
 import { Todo, TodoFormData } from '../types/todo';
 
 export const TodoList: React.FC = () => {
     const [todos, setTodos] = useState<Todo[]>([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isHowToUseOpen, setIsHowToUseOpen] = useState(false);
     const [editingTodo, setEditingTodo] = useState<Todo | undefined>();
     const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'completed'>('all');
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => {
-        fetchTodos();
-    }, []);
-
-    const fetchTodos = async () => {
+    const fetchTodos = useCallback(async () => {
         try {
             const data = await api.getTodos();
             setTodos(data);
         } catch (error) {
             console.error('Error fetching todos:', error);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchTodos();
+    }, [fetchTodos]);
 
     const handleAddTodo = async (data: TodoFormData) => {
         try {
             await api.createTodo(data);
             fetchTodos();
+            setIsFormOpen(false);
         } catch (error) {
             console.error('Error creating todo:', error);
         }
@@ -48,6 +51,8 @@ export const TodoList: React.FC = () => {
         try {
             await api.updateTodo(id, data);
             fetchTodos();
+            setIsFormOpen(false);
+            setEditingTodo(undefined);
         } catch (error) {
             console.error('Error updating todo:', error);
         }
@@ -74,18 +79,27 @@ export const TodoList: React.FC = () => {
             <Stack spacing={3}>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                     <Typography variant="h4" component="h1">
-                        Todo List
+                        Smart Todo
                     </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => {
-                            setEditingTodo(undefined);
-                            setIsFormOpen(true);
-                        }}
-                    >
-                        Add Todo
-                    </Button>
+                    <Stack direction="row" spacing={2}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<HelpIcon />}
+                            onClick={() => setIsHowToUseOpen(true)}
+                        >
+                            How to Use
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => {
+                                setEditingTodo(undefined);
+                                setIsFormOpen(true);
+                            }}
+                        >
+                            Add Todo
+                        </Button>
+                    </Stack>
                 </Box>
 
                 <Stack direction="row" spacing={2}>
@@ -140,7 +154,12 @@ export const TodoList: React.FC = () => {
                 initialData={editingTodo}
             />
 
-            <ChatBox />
+            <HowToUse 
+                open={isHowToUseOpen}
+                onClose={() => setIsHowToUseOpen(false)}
+            />
+
+            <ChatBox onTodoUpdate={fetchTodos} />
         </Container>
     );
 }; 

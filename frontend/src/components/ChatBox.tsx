@@ -1,63 +1,61 @@
 import React, { useState } from 'react';
 import {
-    Paper,
+    Box,
     TextField,
     IconButton,
-    Box,
+    Paper,
     Typography,
-    List,
-    ListItem,
-    ListItemText,
-    Divider
+    Stack,
+    CircularProgress
 } from '@mui/material';
 import { Send as SendIcon } from '@mui/icons-material';
+import { api } from '../services/api';
 
 interface Message {
-    text: string;
-    isUser: boolean;
-    timestamp: Date;
+    role: 'user' | 'assistant';
+    content: string;
 }
 
-export const ChatBox: React.FC = () => {
+interface ChatBoxProps {
+    onTodoUpdate: () => void;  
+}
+
+export const ChatBox: React.FC<ChatBoxProps> = ({ onTodoUpdate }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
-    const messagesEndRef = React.useRef<null | HTMLDivElement>(null);
-
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    React.useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSend = async () => {
         if (!input.trim()) return;
 
-        const userMessage: Message = {
-            text: input,
-            isUser: true,
-            timestamp: new Date()
-        };
-
-        setMessages(prev => [...prev, userMessage]);
+        const userMessage = input.trim();
         setInput('');
+        setIsLoading(true);
 
-        // TODO: Implement AI response logic here
-        // For now, we'll just echo back
-        setTimeout(() => {
-            const aiMessage: Message = {
-                text: `I received your message: "${input}"`,
-                isUser: false,
-                timestamp: new Date()
-            };
-            setMessages(prev => [...prev, aiMessage]);
-        }, 1000);
+        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+
+        try {
+            const response = await api.chat(userMessage);
+            
+            setMessages(prev => [...prev, { role: 'assistant', content: response.message }]);
+
+            if (response.command) {
+                onTodoUpdate();
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            setMessages(prev => [...prev, { 
+                role: 'assistant', 
+                content: 'Sorry, I encountered an error processing your request.' 
+            }]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
+    const handleKeyPress = (event: React.KeyboardEvent) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
             handleSend();
         }
     };
@@ -71,55 +69,60 @@ export const ChatBox: React.FC = () => {
                 width: 350,
                 height: 500,
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                boxShadow: 3,
             }}
-            elevation={3}
         >
-            <Box sx={{ p: 2, backgroundColor: 'primary.main', color: 'white' }}>
-                <Typography variant="h6">AI Assistant</Typography>
+            <Box
+                sx={{
+                    p: 2,
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                }}
+            >
+                <Typography variant="h6">Chat Assistant</Typography>
             </Box>
-            <List
+
+            <Box
                 sx={{
                     flex: 1,
                     overflow: 'auto',
                     p: 2,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 1
+                    gap: 1,
                 }}
             >
                 {messages.map((message, index) => (
-                    <ListItem
+                    <Box
                         key={index}
                         sx={{
-                            flexDirection: 'column',
-                            alignItems: message.isUser ? 'flex-end' : 'flex-start',
-                            padding: 0
+                            alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                            maxWidth: '80%',
                         }}
                     >
                         <Paper
                             sx={{
                                 p: 1,
-                                backgroundColor: message.isUser ? 'primary.main' : 'grey.100',
-                                color: message.isUser ? 'white' : 'text.primary',
-                                maxWidth: '80%'
+                                backgroundColor: message.role === 'user' ? 'primary.main' : 'grey.100',
+                                color: message.role === 'user' ? 'white' : 'text.primary',
                             }}
                         >
-                            <ListItemText
-                                primary={message.text}
-                                secondary={message.timestamp.toLocaleTimeString()}
-                                secondaryTypographyProps={{
-                                    color: message.isUser ? 'white' : undefined,
-                                    fontSize: '0.75rem'
-                                }}
-                            />
+                            <Typography variant="body2">{message.content}</Typography>
                         </Paper>
-                    </ListItem>
+                    </Box>
                 ))}
-                <div ref={messagesEndRef} />
-            </List>
-            <Divider />
-            <Box sx={{ p: 2, display: 'flex', gap: 1 }}>
+            </Box>
+
+            <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                    p: 2,
+                    borderTop: 1,
+                    borderColor: 'divider',
+                }}
+            >
                 <TextField
                     fullWidth
                     size="small"
@@ -127,17 +130,16 @@ export const ChatBox: React.FC = () => {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    multiline
-                    maxRows={4}
+                    disabled={isLoading}
                 />
-                <IconButton
-                    color="primary"
+                <IconButton 
+                    color="primary" 
                     onClick={handleSend}
-                    disabled={!input.trim()}
+                    disabled={isLoading}
                 >
-                    <SendIcon />
+                    {isLoading ? <CircularProgress size={24} /> : <SendIcon />}
                 </IconButton>
-            </Box>
+            </Stack>
         </Paper>
     );
 }; 
