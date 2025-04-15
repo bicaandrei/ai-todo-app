@@ -93,3 +93,7 @@ Try these commands in the chat:
 During development, I implemented a custom `MockChatService` to handle chat interactions when OpenAI API requests were limited. This service provides similar functionality to the OpenAI-powered chat but with predefined responses, making it perfect for development and testing without consuming API credits.
 
 The mock service supports all basic operations (create, update, delete tasks) and can be easily switched with the OpenAI service by changing a single import in the backend code.
+
+![Screenshot 2025-04-15 155547](https://github.com/user-attachments/assets/f4d45ba2-4a2e-43da-b8bb-fdde48a078c9)
+
+![Screenshot 2025-04-15 155619](https://github.com/user-attachments/assets/8cfcb796-b696-4ad9-8482-2434765ac5cb)
