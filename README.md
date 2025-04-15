@@ -1,4 +1,4 @@
-# Smart Todo - AI-Powered Todo List
+# AI-Powered Todo List
 
 A modern todo list application that lets you manage your tasks through both a traditional interface and a chat-based AI assistant. Built with React, Flask, and OpenAI's API.
 
@@ -90,6 +90,6 @@ Try these commands in the chat:
 
 ## Development Notes
 
-During development, we implemented a custom `MockChatService` to handle chat interactions when OpenAI API requests were limited. This service provides similar functionality to the OpenAI-powered chat but with predefined responses, making it perfect for development and testing without consuming API credits.
+During development, I implemented a custom `MockChatService` to handle chat interactions when OpenAI API requests were limited. This service provides similar functionality to the OpenAI-powered chat but with predefined responses, making it perfect for development and testing without consuming API credits.
 
 The mock service supports all basic operations (create, update, delete tasks) and can be easily switched with the OpenAI service by changing a single import in the backend code.
