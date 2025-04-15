@@ -26,7 +26,7 @@ A modern todo list application that lets you manage your tasks through both a tr
 
 1. Clone the repository and install dependencies:
 ```bash
-git clone <repository-url>
+git clone [<repository-url>](https://github.com/bicaandrei/ai-todo-app.git)
 cd ai-todo-app
 ```
 
