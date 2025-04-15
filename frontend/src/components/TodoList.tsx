@@ -79,7 +79,7 @@ export const TodoList: React.FC = () => {
             <Stack spacing={3}>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                     <Typography variant="h4" component="h1">
-                        Smart Todo
+                        Todo List
                     </Typography>
                     <Stack direction="row" spacing={2}>
                         <Button
